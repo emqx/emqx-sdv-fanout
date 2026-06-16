@@ -10,22 +10,15 @@
 -compile(nowarn_export_all).
 
 all() ->
-    [
-        F
-     || {F, _} <- ?MODULE:module_info(exports),
-        is_test_function(F)
-    ].
-
-is_test_function(F) ->
-    case atom_to_list(F) of
-        "t_" ++ _ -> true;
-        _ -> false
-    end.
+    emqx_common_test_helpers:all(?MODULE).
 
 init_per_suite(Config) ->
-    Config.
+    Apps = emqx_cth_suite:start([emqx], #{work_dir => emqx_cth_suite:work_dir(Config)}),
+    [{apps, Apps} | Config].
 
-end_per_suite(_Config) ->
+end_per_suite(Config) ->
+    {apps, Apps} = lists:keyfind(apps, 1, Config),
+    ok = emqx_cth_suite:stop(Apps),
     ok.
 
 init_per_testcase(_Case, Config) ->

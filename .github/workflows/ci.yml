@@ -9,29 +9,31 @@ on:
     branches: [ "main" ]
   workflow_dispatch:
 
+env:
+  DEBUG: 1
+
 jobs:
   test:
     name: Run tests
     runs-on: ubuntu-24.04
+    container: ghcr.io/emqx/emqx-builder/6.0-12:1.18.3-27.3.4.2-6-ubuntu24.04
 
     steps:
     - uses: actions/checkout@v4
 
-    - name: Setup Erlang
-      uses: erlef/setup-beam@v1
-      with:
-        otp-version: "26"
-        rebar3-version: "3"
-
     - name: Check Version
       run: ./scripts/check-vsn.sh
+
+    - name: Ensure git safe dir
+      run: |
+        git config --global --add safe.directory "$GITHUB_WORKSPACE"
 
     - name: Check format
       run: make fmt-check
 
     - name: Run tests
       run: |
-        make run
+        # make run
         make eunit
         make ct
 
